@@ -9,8 +9,8 @@ function DataList(props) {
         return Object.keys(numberByStatus).map((status, index) => {
             return (
                     <Col xs={24} sm={24} md={8} lg={8} xl={8} key={index}>
-                        <div className={`${status}`}>
-                            <Card title={status} bordered={true}>
+                        <div>
+                            <Card title={`Total ${status}`} bordered={true}>
                                 <h1>
                                     {numberByStatus[status]}
                                 </h1>
