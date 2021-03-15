@@ -1,0 +1,41 @@
+.home {
+    min-height: 100vh;
+    width: 100%;
+
+    .title {
+        text-align: center;
+        margin-top: $p-5;
+    }
+
+    .row {
+        justify-content: space-between;
+        flex-wrap: wrap;
+            .countriesInput {
+                max-width: 500px;
+                width: 80%;
+            }
+    }
+
+    .ant-input-affix-wrapper {
+        height: 32px;
+    }
+
+    .ant-spin-spinning {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        background-color: #ffffffc7;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .ant-form-item-control-input, .ant-picker-range {
+        max-width: 450px;
+        width: 100%;
+    }
+}
+
+

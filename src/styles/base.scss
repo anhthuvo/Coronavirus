@@ -1,0 +1,75 @@
+body {
+    margin: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+}
+
+$breakpoint-sm: 575.98px;
+$breakpoint-md: 767.98px;
+$breakpoint-lg: 991.98px;
+$breakpoint-xl: 1199.98px;
+$breakpoint-xxl: 1399.98px;
+
+$container-sm: 100%;
+$container-md: 720px;
+$container-lg: 960px;
+$container-xl: 960px;
+$container-xxl: 960px;
+
+$padding-sm: 20px;
+$padding-md: 20px;
+$padding-lg: 0;
+$padding-xl: 0;
+$padding-xxl: 0;
+
+$p-1: 10px;
+$p-2: 20px;
+$p-3: 30px;
+$p-4: 40px;
+$p-5: 50px;
+
+.container {
+    margin: auto;
+    max-width: $container-sm;
+    padding: 0 $padding-sm;
+
+    // X-Small devices (portrait phones, less than 576px)
+    @media (min-width: $breakpoint-sm) { 
+        max-width: $container-sm;
+        padding: 0 $padding-sm;
+    }
+
+    // Small devices (landscape phones, less than 768px)
+    @media (min-width: $breakpoint-md) {
+        max-width: $container-md;
+        padding: 0 $padding-md;
+    }
+
+    // Medium devices (tablets, less than 992px)
+    @media (min-width: $breakpoint-lg) {
+        max-width: $container-lg;
+        padding: 0 $padding-lg;
+    }
+    // Large devices (desktops, less than 1200px)
+    @media (min-width: $breakpoint-xl) {
+        max-width: $container-xl;
+        padding: 0 $padding-xl;
+    }
+    // X-Large devices (large desktops, less than 1400px)
+    @media (min-width: $breakpoint-xxl) {
+        max-width: $container-xxl;
+        padding: 0 $padding-xxl;
+    }
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+}
+
