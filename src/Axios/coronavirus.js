@@ -1,14 +1,8 @@
 import axios from "axios";
 
-let config = {
-    headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": false
-    }
-}
 export const getCountries = () => {
     const url = `${process.env.REACT_APP_API_ENDPOINT}countries`
-    return axios.get(url,config);
+    return axios.get(url);
 }
 
 export const getDataByCountryAllStatus = (country, from, to) => {
