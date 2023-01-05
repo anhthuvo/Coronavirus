@@ -1,175 +1,149 @@
-import { DatePicker, Select, Form, Spin, Result, message } from 'antd';
-import React, { useState, useEffect } from 'react';
-import { getCountries, getDataByCountryAllStatus } from '../../Axios/coronavirus.js'
-import DataList from './DataList/DataList.jsx';
+import React, { useState, useEffect } from "react";
+import { getSummary, getCountry } from "../../api/coronavirus.js";
+import { data } from "../../data";
+import { List, Card, Modal, Spin } from "antd";
 
-const { Option } = Select;
-const { RangePicker } = DatePicker;
-const layout = {
-    labelCol: { span: 4 },
-    wrapperCol: { span: 20 },
+const INIT_COUNTRY = {
+  name: "",
+  flagImg: "",
+  population: "",
+  capital: [],
+  region: "",
+  subregion: "",
 };
 
 export default function Home() {
-    const [state, setstate] = useState();
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [country, setCountry] = useState(INIT_COUNTRY);
 
-    useEffect(() => {
-        getCountriesData();
-    }, [])
+  const showModal = (code) => {
+    setLoading(true);
+    getCountry(code)
+      .then((res) => {
+        if (res.data.length === 0) throw "error";
+        const {
+          name: { official },
+          population,
+          flags: { png },
+          capital,
+          region,
+          subregion,
+        } = res.data[0];
 
-    const getCountriesData = () => {
-        getCountries()
-        .then(res => {
-            const processedData = res.data.map(ele => {
-                const { Country, Slug, ISO2 } = ele;
-                return { Country, Slug, ISO2 };
-            })
-            .sort(function (a, b) {
-                    var CountryA = a.Country.toLowerCase();
-                    var CountryB = b.Country.toLowerCase();
-                    if (CountryA < CountryB) return -1;
-                    if (CountryA > CountryB) return 1;
-                    return 0;
-            });
-
-            setstate({
-                loading: false,
-                error: {
-                    boolean: false,
-                    message: ""
-                },
-                countryData: processedData,
-                from: undefined,
-                to: undefined,
-                numberByStatus: undefined,
-                country: undefined,
-            });
-        })
-        .catch(err => {
-            setstate({
-                countryData: [],
-                from: undefined,
-                to: undefined,
-                numberByStatus: undefined,
-                country: undefined,
-                loading: false,
-                error: {
-                    boolean: true,
-                    message: err.response?.data
-                }
-            });
-        })
-    }
-
-    const [inputs] = Form.useForm();
-
-    const processDataList = (data) => {
-        let m = data.length - 1;
-        const numberByStatus = {}
-
-        if (data.length === 0) return { numberByStatus: {} };
-        const statuses = ['Confirmed', 'Deaths', 'Recovered'];
-        statuses.forEach(status => {
-            numberByStatus[status] = data[m][status] - data[0][status];
+        setCountry({
+          name: official,
+          flagImg: png,
+          population: population,
+          capital: capital,
+          region: region,
+          subregion: subregion,
         });
-        return {
-            numberByStatus, 
-            country: data[0].Country,
-            from: data[0].Date,
-            to: data[m].Date
-        };
+
+        setIsModalOpen(true);
+      })
+      .catch((err) => {})
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const handleOk = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const getData = () => {
+    setLoading(true);
+    getSummary()
+      .then((res) => {
+        data = res.data.sort(sortFunc);
+
+        console.log("data", data)
+        setList(data);
+      })
+      .catch((err) => {})
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const sortFunc = (a, b) => {
+    if (a.TotalConfirmed < b.TotalConfirmed) {
+      return 1;
+    } else if (a.TotalConfirmed > b.TotalConfirmed) {
+      return -1;
     }
-
-    const onInputChange = () => {
-        const { Period, Country } = inputs.getFieldValue();
-        if (!Period || !Country) return;
-
-        let from = new Date(Period[0]._d).toISOString();
-        from = from.replace(/T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z/g, "T00:00:00Z");
-        let to = new Date(Period[1]._d).toISOString();
-        to = to.replace(/T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z/g, "T00:00:00Z");
-
-        setTimeout(() => {
-            setstate({ ...state, loading: true });
-            getDataByCountryAllStatus(Country, from, to)
-                .then(res => {
-                    setstate({
-                        ...state,
-                        loading: false,
-                        ...processDataList(res.data),
-                    });
-                })
-                .catch(err => {
-                    console.log(err);
-                    let newState = { ...state, loading: false }
-                    if (err.response?.status >= 500) {
-                        newState = {
-                            ...newState,
-                            error: {
-                                boolean: true,
-                                message: err.response?.data
-                            }
-                        };
-                    }else {
-                        message.error('Some errors happened');
-                    }
-                    setstate(newState);
-                });
-        }, 500);
+    if (a.TotalDeaths < b.TotalDeaths) {
+      return 1;
+    } else if (a.TotalDeaths > b.TotalDeaths) {
+      return -1;
     }
+    if (a.TotalRecovered < b.TotalRecovered) {
+      return -1;
+    } else if (a.TotalRecovered > b.TotalRecovered) {
+      return 1;
+    }
+    return 0;
+  }
 
-    const stringToReacComponent = (str) => {
-        return <div dangerouslySetInnerHTML={{__html: str}} />
-    };
-
-    if (state === undefined) return null;
-    return (
-        <div className="home">
-            <Spin tip="Loading..." spinning={state.loading}></Spin>
-            {state.error.boolean ?
-                <Result
-                    status="500"
-                    title={stringToReacComponent(state.error.message)}
-                    subTitle="Sorry, something went wrong."
-                />
-                :
-                <div className="container">
-                    <h1 className="title">CORONA VIRUS TRACKING</h1>
-                    <Form
-                        form={inputs}
-                        {...layout}
-                        onValuesChange={() => onInputChange()}
-                    >
-                        <div className="countriesInput">
-                            <Form.Item
-                                label="Country"
-                                name="Country"
-                                rules={[{ required: true, message: 'Please input country!' }]}
-                            >
-                                <Select placeholder="Select country">
-                                    {state.countryData.map((country, index) => (
-                                        <Option key={country.Slug || index}>{country.Country}</Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </div>
-                        <Form.Item
-                            name="Period" label="Period"
-                            rules={[{ required: true, message: 'Please input period!' }]}
-                        >
-                            <RangePicker allowClear={false} />
-                        </Form.Item>
-                    </Form>
-
-                    <div className="result-group">
-                        {state.numberByStatus && 
-                        <DataList 
-                        numberByStatus={state.numberByStatus}
-                        country={state.country}
-                         />}
-                    </div>
-                </div>
-            }
+  return (
+    <>
+      <div className="home">
+        <Spin tip="Loading..." spinning={loading}></Spin>
+        <div className="container">
+          <h1 className="title">CORONA VIRUS TRACKING</h1>
+          <List
+            itemLayout="vertical"
+            size="large"
+            pagination={{
+              onChange: (page) => {},
+              pageSize: 9,
+              showSizeChanger: false,
+            }}
+            grid={{ gutter: 16, column: 3 }}
+            dataSource={list}
+            renderItem={(item) => (
+              <List.Item key={item.Country} className="">
+                <Card
+                  title={<p>{item.Country}</p>}
+                  onClick={() => showModal(item.CountryCode.toLowerCase())}
+                >
+                  Total Confirmed: {item.TotalConfirmed}
+                  <br />
+                  Total Deaths: {item.TotalDeaths}
+                  <br />
+                  Total Recovered: {item.TotalRecovered}
+                  <br />
+                </Card>
+              </List.Item>
+            )}
+          />
         </div>
-    )
+        <Modal
+          title="Country"
+          open={isModalOpen}
+          onOk={handleOk}
+          onCancel={handleCancel}
+          footer={null}
+          className="modal"
+        >
+          <img src={country.flagImg} className="flag" alt="flag"/>
+          <p>Name: {country.name} </p>
+          <p>Population: {country.population} </p>
+          <p>Region: {country.region} </p>
+          <p>Subregion: {country.subregion} </p>
+          <p>Capital: {country.capital} </p>
+        </Modal>
+      </div>
+    </>
+  );
 }
