@@ -57,20 +57,18 @@ export default function Home() {
     setIsModalOpen(false);
   };
 
-  useEffect(() => {
-    getData();
-  }, []);
-
   const getData = () => {
     setLoading(true);
     getSummary()
       .then((res) => {
-        data = res.data.sort(sortFunc);
-
-        console.log("data", data)
-        setList(data);
+        if (res.data?.["Countries"]) {
+          let data = res.data["Countries"].sort(sortFunc);
+          setList(data);
+        }
       })
-      .catch((err) => {})
+      .catch((err) => {
+        console.log(err)
+      })
       .finally(() => {
         setLoading(false);
       });
@@ -95,6 +93,10 @@ export default function Home() {
     return 0;
   }
 
+
+  useEffect(() => {
+    getData();
+  }, []);
   return (
     <>
       <div className="home">
@@ -116,6 +118,7 @@ export default function Home() {
                 <Card
                   title={<p>{item.Country}</p>}
                   onClick={() => showModal(item.CountryCode.toLowerCase())}
+                  className="card"
                 >
                   Total Confirmed: {item.TotalConfirmed}
                   <br />

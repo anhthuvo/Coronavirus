@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-    baseURL: process.env.REACT_APP_API_ENDPOINT,
+    baseURL: "https://api.covid19api.com/",
     headers: {
       "Content-Type": "application/json",
     },
